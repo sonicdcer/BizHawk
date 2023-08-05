@@ -1,3 +1,10 @@
+#define RAM_8M 1
+
+#if RAM_8M == 1
+#define RAM_SIZE 8192
+#else
+#define RAM_SIZE 2048
+#endif
 #include <src/types.h>
 #include <src/mednafen.h>
 #include <src/psx/psx.h>
@@ -19,7 +26,7 @@ void SetupMDFNGameInfo()
 
 namespace MDFN_IEN_PSX
 {
-	extern MultiAccessSizeMem<2048 * 1024, false> MainRAM;
+	extern MultiAccessSizeMem<RAM_SIZE * 1024, false> MainRAM;
 	extern PS_GPU GPU;
 	extern PS_SPU *SPU;
 	extern PS_CPU *CPU;
@@ -54,7 +61,7 @@ ECL_EXPORT void GetMemoryAreas(MemoryArea* m)
 		i++;\
 	}\
 	while (0)
-	AddMemoryDomain("MainRAM", MainRAM.data8, 2048*1024, MEMORYAREA_FLAGS_WRITABLE | MEMORYAREA_FLAGS_WORDSIZE4 | MEMORYAREA_FLAGS_PRIMARY);
+	AddMemoryDomain("MainRAM", MainRAM.data8, RAM_SIZE*1024, MEMORYAREA_FLAGS_WRITABLE | MEMORYAREA_FLAGS_WORDSIZE4 | MEMORYAREA_FLAGS_PRIMARY);
 	AddMemoryDomain("GPURAM", GPU.GPURAM, 2*512*1024, MEMORYAREA_FLAGS_WRITABLE | MEMORYAREA_FLAGS_WORDSIZE4);
 	AddMemoryDomain("SPURAM", SPU->SPURAM, 512*1024, MEMORYAREA_FLAGS_WRITABLE | MEMORYAREA_FLAGS_WORDSIZE4);
 	AddMemoryDomain("BiosROM", BIOSROM->data8, 512*1024, MEMORYAREA_FLAGS_WRITABLE | MEMORYAREA_FLAGS_WORDSIZE4);
