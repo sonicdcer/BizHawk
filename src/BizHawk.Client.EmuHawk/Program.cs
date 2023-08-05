@@ -210,7 +210,7 @@ namespace BizHawk.Client.EmuHawk
 				switch (dispMethod)
 				{
 					case EDispMethod.D3D9:
-						if (OSTC.IsUnixHost)
+						if (OSTC.IsUnixHost || OSTC.IsWine)
 						{
 							// possibly sharing config w/ Windows, assume the user wants the not-slow method (but don't change the config)
 							return TryInitIGL(EDispMethod.OpenGL);
@@ -235,7 +235,7 @@ namespace BizHawk.Client.EmuHawk
 						}
 						var igl = new IGL_OpenGL();
 						// need to have a context active for checking renderer, will be disposed afterwards
-						using (new SDL2OpenGLContext(2, 0, false))
+						using (new SDL2OpenGLContext(OpenGLVersion.SupportsVersion(3, 0) ? 3 : 2, 0, false, false))
 						{
 							return CheckRenderer(igl);
 						}

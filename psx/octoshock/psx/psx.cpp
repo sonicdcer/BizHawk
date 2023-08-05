@@ -190,7 +190,7 @@ FrontIO *FIO = NULL;
 static MultiAccessSizeMem<512 * 1024, false> *BIOSROM = NULL;
 static MultiAccessSizeMem<65536, false> *PIOMem = NULL;
 
-MultiAccessSizeMem<2048 * 1024, false> MainRAM;
+MultiAccessSizeMem<8192 * 1024, false> MainRAM;
 
 static uint32 TextMem_Start;
 static std::vector<uint8> TextMem;
@@ -440,16 +440,16 @@ template<typename T, bool IsWrite, bool Access24> static INLINE void MemRW(pscpu
   if(Access24)
   {
    if(IsWrite)
-    MainRAM.WriteU24(A & 0x1FFFFF, V);
+    MainRAM.WriteU24(A & 0x7FFFFF, V);
    else
-    V = MainRAM.ReadU24(A & 0x1FFFFF);
+    V = MainRAM.ReadU24(A & 0x7FFFFF);
   }
   else
   {
    if(IsWrite)
-    MainRAM.Write<T>(A & 0x1FFFFF, V);
+    MainRAM.Write<T>(A & 0x7FFFFF, V);
    else
-    V = MainRAM.Read<T>(A & 0x1FFFFF);
+    V = MainRAM.Read<T>(A & 0x7FFFFF);
   }
 
   return;
@@ -800,9 +800,9 @@ template<typename T, bool Access24> static INLINE uint32 MemPeek(pscpu_timestamp
  if(A < 0x00800000)
  {
   if(Access24)
-   return(MainRAM.ReadU24(A & 0x1FFFFF));
+   return(MainRAM.ReadU24(A & 0x7FFFFF));
   else
-   return(MainRAM.Read<T>(A & 0x1FFFFF));
+   return(MainRAM.Read<T>(A & 0x7FFFFF));
  }
 
  if(A >= 0x1FC00000 && A <= 0x1FC7FFFF)
@@ -932,9 +932,9 @@ template<typename T, bool Access24> static INLINE void MemPoke(pscpu_timestamp_t
  if(A < 0x00800000)
  {
   if(Access24)
-   MainRAM.WriteU24(A & 0x1FFFFF, V);
+   MainRAM.WriteU24(A & 0x7FFFFF, V);
   else
-   MainRAM.Write<T>(A & 0x1FFFFF, V);
+   MainRAM.Write<T>(A & 0x7FFFFF, V);
 
   return;
  }
@@ -985,7 +985,7 @@ static void PSX_Power(bool powering_up)
 {
  PSX_PRNG.ResetState();	// Should occur first!
 
- memset(MainRAM.data8, 0, 2048 * 1024);
+ memset(MainRAM.data8, 0, 8192 * 1024);
 
  for(unsigned i = 0; i < 9; i++)
   SysControl.Regs[i] = 0;
@@ -1336,11 +1336,11 @@ EW_EXPORT s32 shock_Peripheral_MemcardTransact(void* psx, s32 address, ShockMemc
 
 static void MountCPUAddressSpace()
 {
-	for(uint32 ma = 0x00000000; ma < 0x00800000; ma += 2048 * 1024)
+	for(uint32 ma = 0x00000000; ma < 0x00800000; ma += 8192 * 1024)
 	{
-		CPU->SetFastMap(MainRAM.data8, 0x00000000 + ma, 2048 * 1024);
-		CPU->SetFastMap(MainRAM.data8, 0x80000000 + ma, 2048 * 1024);
-		CPU->SetFastMap(MainRAM.data8, 0xA0000000 + ma, 2048 * 1024);
+		CPU->SetFastMap(MainRAM.data8, 0x00000000 + ma, 8192 * 1024);
+		CPU->SetFastMap(MainRAM.data8, 0x80000000 + ma, 8192 * 1024);
+		CPU->SetFastMap(MainRAM.data8, 0xA0000000 + ma, 8192 * 1024);
 	}
 
 	CPU->SetFastMap(BIOSROM->data8, 0x1FC00000, 512 * 1024);
@@ -2630,7 +2630,7 @@ EW_EXPORT s32 shock_GetMemData(void* psx, void** ptr, s32* size, s32 memType)
 {
 	switch(memType)
 	{
-	case eMemType_MainRAM: *ptr = MainRAM.data8; *size = 2048*1024; break;
+	case eMemType_MainRAM: *ptr = MainRAM.data8; *size = 8192*1024; break;
 	case eMemType_BiosROM: *ptr = BIOSROM->data8; *size = 512*1024; break;
 	case eMemType_PIOMem: *ptr = PIOMem->data8; *size = 64*1024; break;
 	case eMemType_GPURAM: *ptr = GPU.GPURAM; *size = 2*512*1024; break;
